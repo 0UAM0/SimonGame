@@ -17,7 +17,7 @@ void loadbuttons(sf::Texture textures[4]);
 
 int main()
 {
-
+    sf::RenderWindow window;
 }
 
 void createWindow(sf::RenderWindow& window)

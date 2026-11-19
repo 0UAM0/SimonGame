@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <string>
+#include <vector>
 #include <algorithm>
 #include <cstdlib>
 #include <ctime>
@@ -20,9 +21,12 @@ void loadButtons(Sprite buttons[4], Texture textures[4]);
 bool loadFont(Font& font);
 void drawGameName(RenderWindow& window, Font& font);
 int detectMouseHover(RenderWindow& window, Sprite buttons[4]);
+int detectMouseClick(RenderWindow& window, Sprite buttons[4], const optional<Event>& event);
+vector<int> patternGenerate(int i);
 
 int main()
 {
+    srand(static_cast<unsigned int>(time(nullptr)));
     RenderWindow window;
     createWindow(window);
     Font font;
@@ -45,6 +49,12 @@ int main()
             if (event->is<Event::Closed>())
             {
                 window.close();
+            }
+
+            const int clickedButton = detectMouseClick(window, buttons, event);
+            if (clickedButton != -1)
+            {
+                cout << "Button clicked: " << clickedButton << endl;
             }
         }
 
@@ -124,4 +134,26 @@ int detectMouseHover(RenderWindow& window, Sprite buttons[4])
     }
 
     return -1;
+}
+
+int detectMouseClick(RenderWindow& window, Sprite buttons[4], const optional<Event>& event)
+{
+    if (event.has_value() && event->is<Event::MouseButtonPressed>())
+    {
+        return detectMouseHover(window, buttons);
+    }
+
+    return -1;
+}
+
+vector<int> patternGenerate(int i)
+{
+    vector<int> pattern;
+
+    for (int iteration = 0; iteration < i; iteration++)
+    {
+        pattern.push_back(rand() % 4);
+    }
+
+    return pattern;
 }

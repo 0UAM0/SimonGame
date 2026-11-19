@@ -13,7 +13,7 @@ const string DIFFICULTIES[3] = {"Easy", "Medium", "Hard"};
 const string BUTTONS[4] = {"buttonGreen.png", "buttonRed.png", "buttonYellow.png", "buttonBlue.png"};
 
 void createWindow(sf::RenderWindow& window);
-void loadbuttons(sf::Texture textures[4]);
+void loadButtons(sf::Sprite buttons[4], sf::Texture textures[4]);
 
 int main()
 {
@@ -26,7 +26,7 @@ void createWindow(sf::RenderWindow& window)
     window.setFramerateLimit(60);
 }
 
-void loadbuttons(sf::Texture textures[4])
+void loadButtons(sf::Sprite buttons[4], sf::Texture textures[4])
 {
     for (int i = 0; i < 4; ++i)
     {
@@ -35,5 +35,11 @@ void loadbuttons(sf::Texture textures[4])
             cerr << "Error loading texture: " << BUTTONS[i] << endl;
             exit(EXIT_FAILURE);
         }
+        buttons[i].setTexture(textures[i]);
     }
+
+    buttons[0].setPosition(100, 100); // Green button
+    buttons[1].setPosition(500, 100); // Red button
+    buttons[2].setPosition(100, 400); // Yellow button
+    buttons[3].setPosition(500, 400); // Blue button
 }

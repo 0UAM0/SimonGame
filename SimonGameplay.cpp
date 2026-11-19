@@ -38,7 +38,7 @@ int main()
             }
         }
 
-        window.clear(Color::White);
+        window.clear(Color(0, 13, 56));
         for (const Sprite& button : buttons)
         {
             window.draw(button);

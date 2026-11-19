@@ -9,8 +9,8 @@
 using namespace std;
 using namespace sf;
 
-const int WINDOW_W = 800;
-const int WINDOW_H = 600;
+const int WINDOW_W = 1280;
+const int WINDOW_H = 720;
 const string DIFFICULTIES[3] = {"Easy", "Medium", "Hard"};
 const string BUTTONS[4] = {"buttonGreen.png", "buttonRed.png", "buttonYellow.png", "buttonBlue.png"};
 
@@ -23,9 +23,9 @@ int main()
     createWindow(window);
     Texture textures[4];
     Sprite buttons[4] = {Sprite(textures[0]),
-                             Sprite(textures[1]),
-                             Sprite(textures[2]),
-                             Sprite(textures[3])};
+                         Sprite(textures[1]),
+                         Sprite(textures[2]),
+                         Sprite(textures[3])};
     loadButtons(buttons, textures);
 
     while (window.isOpen())
@@ -64,11 +64,11 @@ void loadButtons(Sprite buttons[4], Texture textures[4])
             cerr << "Error loading texture: " << BUTTONS[i] << endl;
             exit(EXIT_FAILURE);
         }
-        buttons[i].setTexture(textures[i]);
+        buttons[i].setTexture(textures[i], true);
     }
 
-    buttons[0].setPosition(Vector2f(100.f, 100.f)); // Green button
-    buttons[1].setPosition(Vector2f(500.f, 100.f)); // Red button
+    buttons[0].setPosition(Vector2f(100.f, 70.f)); // Green button
+    buttons[1].setPosition(Vector2f(425.f, 70.f)); // Red button
     buttons[2].setPosition(Vector2f(100.f, 400.f)); // Yellow button
-    buttons[3].setPosition(Vector2f(500.f, 400.f)); // Blue button
+    buttons[3].setPosition(Vector2f(425.f, 400.f)); // Blue button
 }

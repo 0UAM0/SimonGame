@@ -110,7 +110,7 @@ bool loadFont(sf::Font &font)
 
 void drawGameName(RenderWindow& window, Font& font)
 {
-    Text gameName(font, "SIMON", 72);
+    Text gameName(font, "S I M O N", 72);
     gameName.setFillColor(MAIN_TEXT_COLOUR);
     const FloatRect bounds = gameName.getLocalBounds();
     const float buttonGridCenterX = (100.f + 420.f + 256.f) / 2.f;
@@ -121,13 +121,17 @@ void drawGameName(RenderWindow& window, Font& font)
 int detectMouseHover(RenderWindow& window, Sprite buttons[4])
 {
     const Vector2i mousePosition = Mouse::getPosition(window);
-    const Vector2f mousePositionF(
-        static_cast<float>(mousePosition.x),
-        static_cast<float>(mousePosition.y));
+    const Vector2f mousePositionF(static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y));
 
     for (int i = 0; i < 4; i++)
     {
-        if (buttons[i].getGlobalBounds().contains(mousePositionF))
+        const FloatRect buttonBounds = buttons[i].getGlobalBounds();
+        const Vector2f buttonCenter(buttonBounds.position.x + buttonBounds.size.x / 2.f, buttonBounds.position.y + buttonBounds.size.y / 2.f);
+        const float buttonRadius = min(buttonBounds.size.x, buttonBounds.size.y) * 0.35f;
+        const float horizontalDistance = mousePositionF.x - buttonCenter.x;
+        const float verticalDistance = mousePositionF.y - buttonCenter.y;
+
+        if (horizontalDistance * horizontalDistance + verticalDistance * verticalDistance <= buttonRadius * buttonRadius)
         {
             return i;
         }

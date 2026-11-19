@@ -19,6 +19,7 @@ void createWindow(RenderWindow& window);
 void loadButtons(Sprite buttons[4], Texture textures[4]);
 bool loadFont(Font& font);
 void drawGameName(RenderWindow& window, Font& font);
+int detectMouseHover(RenderWindow& window, Sprite buttons[4]);
 
 int main()
 {
@@ -47,6 +48,7 @@ int main()
             }
         }
 
+        detectMouseHover(window, buttons);
         window.clear(Color(0, 13, 56));
         drawGameName(window, font);
         for (const Sprite& button : buttons)
@@ -104,4 +106,22 @@ void drawGameName(RenderWindow& window, Font& font)
     const float buttonGridCenterX = (100.f + 420.f + 256.f) / 2.f;
     gameName.setPosition(Vector2f(buttonGridCenterX - bounds.position.x - bounds.size.x / 2.f, 40.f - bounds.position.y));
     window.draw(gameName);
+}
+
+int detectMouseHover(RenderWindow& window, Sprite buttons[4])
+{
+    const Vector2i mousePosition = Mouse::getPosition(window);
+    const Vector2f mousePositionF(
+        static_cast<float>(mousePosition.x),
+        static_cast<float>(mousePosition.y));
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (buttons[i].getGlobalBounds().contains(mousePositionF))
+        {
+            return i;
+        }
+    }
+
+    return -1;
 }

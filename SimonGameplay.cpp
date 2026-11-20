@@ -36,7 +36,7 @@ int main()
     RenderWindow window;
     createWindow(window);
     Font font;
-    if (!loadFont(font))
+    if(!loadFont(font))
     {
         cout << "Error loading font! Place a font file named font.ttf next to the program." << endl;
         return 1;
@@ -50,17 +50,17 @@ int main()
     int feedbackButton = -1;
     Clock feedbackClock;
 
-    while (window.isOpen())
+    while(window.isOpen())
     {
-        while (const optional event = window.pollEvent())
+        while(const optional event = window.pollEvent())
         {
-            if (event->is<Event::Closed>())
+            if(event->is<Event::Closed>())
             {
                 window.close();
             }
 
             const int clickedButton = detectMouseClick(window, buttons, event);
-            if (clickedButton != -1)
+            if(clickedButton != -1)
             {
                 feedbackButton = clickedButton;
                 feedbackClock.restart();
@@ -72,7 +72,7 @@ int main()
         window.clear(Color(0, 13, 56));
         drawGameName(window, font);
         clickFeedback(window, buttons, feedbackButton, feedbackClock.getElapsedTime());
-        for (const Sprite& button : buttons)
+        for(const Sprite& button : buttons)
         {
             window.draw(button);
         }
@@ -90,20 +90,21 @@ void createWindow(RenderWindow& window)
 
 void loadButtons(Sprite buttons[4], Texture textures[4])
 {
-    for (int i = 0; i < 4; ++i)
+    for(int i = 0; i < 4; ++i)
     {
-        if (!textures[i].loadFromFile(BUTTONS[i]))
+        if(!textures[i].loadFromFile(BUTTONS[i]))
         {
             cerr << "Error loading texture: " << BUTTONS[i] << endl;
             exit(EXIT_FAILURE);
         }
         buttons[i].setTexture(textures[i], true);
+        buttons[i].setOrigin(Vector2f(128.f, 128.f));
     }
 
-    buttons[0].setPosition(Vector2f(100.f, 120.f)); // Green button
-    buttons[1].setPosition(Vector2f(420.f, 120.f)); // Red button
-    buttons[2].setPosition(Vector2f(100.f, 420.f)); // Yellow button
-    buttons[3].setPosition(Vector2f(420.f, 420.f)); // Blue button
+    buttons[0].setPosition(Vector2f(228.f, 248.f)); // Green button
+    buttons[1].setPosition(Vector2f(548.f, 248.f)); // Red button
+    buttons[2].setPosition(Vector2f(228.f, 548.f)); // Yellow button
+    buttons[3].setPosition(Vector2f(548.f, 548.f)); // Blue button
 }
 
 bool loadFont(sf::Font &font)
@@ -131,9 +132,25 @@ void drawGameName(RenderWindow& window, Font& font)
 
 void clickFeedback(RenderWindow& window, Sprite buttons[4], int clickedButton, Time elapsed)
 {
-    if (clickedButton < 0 || clickedButton >= 4 || elapsed >= CLICK_FEEDBACK_DURATION)
+    if(clickedButton < 0 || clickedButton > 3)
     {
         return;
+    }
+
+    if(elapsed >= CLICK_FEEDBACK_DURATION)
+    {
+        buttons[clickedButton].setScale(Vector2f(1.f, 1.f));
+        return;
+    }
+
+    for(int i = 0; i < 4; ++i)
+    {
+        buttons[i].setScale(Vector2f(1.f, 1.f));
+    }
+
+    if(elapsed.asSeconds() < CLICK_FEEDBACK_DURATION.asSeconds() / 2.f)
+    {
+        buttons[clickedButton].setScale(Vector2f(0.85f, 0.85f));
     }
 
     const FloatRect buttonBounds = buttons[clickedButton].getGlobalBounds();
@@ -154,7 +171,7 @@ int detectMouseHover(RenderWindow& window, Sprite buttons[4])
     const Vector2i mousePosition = Mouse::getPosition(window);
     const Vector2f mousePositionF(static_cast<float>(mousePosition.x), static_cast<float>(mousePosition.y));
 
-    for (int i = 0; i < 4; i++)
+    for(int i = 0; i < 4; i++)
     {
         const FloatRect buttonBounds = buttons[i].getGlobalBounds();
         const Vector2f buttonCenter(buttonBounds.position.x + buttonBounds.size.x / 2.f, buttonBounds.position.y + buttonBounds.size.y / 2.f);
@@ -162,7 +179,7 @@ int detectMouseHover(RenderWindow& window, Sprite buttons[4])
         const float horizontalDistance = mousePositionF.x - buttonCenter.x;
         const float verticalDistance = mousePositionF.y - buttonCenter.y;
 
-        if (horizontalDistance * horizontalDistance + verticalDistance * verticalDistance <= buttonRadius * buttonRadius)
+        if(horizontalDistance * horizontalDistance + verticalDistance * verticalDistance <= buttonRadius * buttonRadius)
         {
             return i;
         }
@@ -173,7 +190,7 @@ int detectMouseHover(RenderWindow& window, Sprite buttons[4])
 
 int detectMouseClick(RenderWindow& window, Sprite buttons[4], const optional<Event>& event)
 {
-    if (event.has_value() && event->is<Event::MouseButtonPressed>())
+    if(event.has_value() && event->is<Event::MouseButtonPressed>())
     {
         return detectMouseHover(window, buttons);
     }
@@ -185,7 +202,7 @@ vector<int> patternGenerate(int n)
 {
     vector<int> pattern;
 
-    for (int i = 0; i < n; i++)
+    for(int i = 0; i < n; i++)
     {
         pattern.push_back(rand() % 4);
     }

@@ -15,14 +15,20 @@ const int WINDOW_H = 720;
 const string DIFFICULTIES[3] = {"Easy", "Medium", "Hard"};
 const string BUTTONS[4] = {"buttonGreen.png", "buttonRed.png", "buttonYellow.png", "buttonBlue.png"};
 const Color MAIN_TEXT_COLOUR(0, 255, 34);
+const Color BUTTON_GLOW_COLOURS[4] = {Color(0, 255, 0),
+                                      Color(255, 0, 0),
+                                      Color(255, 255, 0),
+                                      Color(0, 128, 255)};
+const Time CLICK_FEEDBACK_DURATION = seconds(0.25f);
 
 void createWindow(RenderWindow& window);
 void loadButtons(Sprite buttons[4], Texture textures[4]);
 bool loadFont(Font& font);
 void drawGameName(RenderWindow& window, Font& font);
+void clickFeedback(RenderWindow& window, Sprite buttons[4], int clickedButton, Time elapsed);
 int detectMouseHover(RenderWindow& window, Sprite buttons[4]);
 int detectMouseClick(RenderWindow& window, Sprite buttons[4], const optional<Event>& event);
-vector<int> patternGenerate(int i);
+vector<int> patternGenerate(int n);
 
 int main()
 {
@@ -41,6 +47,8 @@ int main()
                          Sprite(textures[2]),
                          Sprite(textures[3])};
     loadButtons(buttons, textures);
+    int feedbackButton = -1;
+    Clock feedbackClock;
 
     while (window.isOpen())
     {
@@ -54,6 +62,8 @@ int main()
             const int clickedButton = detectMouseClick(window, buttons, event);
             if (clickedButton != -1)
             {
+                feedbackButton = clickedButton;
+                feedbackClock.restart();
                 cout << "Button clicked: " << clickedButton << endl;
             }
         }
@@ -61,6 +71,7 @@ int main()
         detectMouseHover(window, buttons);
         window.clear(Color(0, 13, 56));
         drawGameName(window, font);
+        clickFeedback(window, buttons, feedbackButton, feedbackClock.getElapsedTime());
         for (const Sprite& button : buttons)
         {
             window.draw(button);
@@ -118,6 +129,26 @@ void drawGameName(RenderWindow& window, Font& font)
     window.draw(gameName);
 }
 
+void clickFeedback(RenderWindow& window, Sprite buttons[4], int clickedButton, Time elapsed)
+{
+    if (clickedButton < 0 || clickedButton >= 4 || elapsed >= CLICK_FEEDBACK_DURATION)
+    {
+        return;
+    }
+
+    const FloatRect buttonBounds = buttons[clickedButton].getGlobalBounds();
+    const Vector2f buttonCenter(buttonBounds.position.x + buttonBounds.size.x / 2.f, buttonBounds.position.y + buttonBounds.size.y / 2.f);
+    const float progress = elapsed.asSeconds() / CLICK_FEEDBACK_DURATION.asSeconds();
+    const uint8_t alpha = static_cast<uint8_t>(125.f * (1.f - progress));
+    const float glowRadius = max(buttonBounds.size.x, buttonBounds.size.y) * 0.52f;
+
+    CircleShape glow(glowRadius, 64);
+    glow.setOrigin(Vector2f(glowRadius, glowRadius));
+    glow.setPosition(buttonCenter);
+    glow.setFillColor(Color(BUTTON_GLOW_COLOURS[clickedButton].r, BUTTON_GLOW_COLOURS[clickedButton].g, BUTTON_GLOW_COLOURS[clickedButton].b, alpha));
+    window.draw(glow);
+}
+
 int detectMouseHover(RenderWindow& window, Sprite buttons[4])
 {
     const Vector2i mousePosition = Mouse::getPosition(window);
@@ -150,11 +181,11 @@ int detectMouseClick(RenderWindow& window, Sprite buttons[4], const optional<Eve
     return -1;
 }
 
-vector<int> patternGenerate(int i)
+vector<int> patternGenerate(int n)
 {
     vector<int> pattern;
 
-    for (int iteration = 0; iteration < i; iteration++)
+    for (int i = 0; i < n; i++)
     {
         pattern.push_back(rand() % 4);
     }

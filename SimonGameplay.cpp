@@ -109,9 +109,9 @@ void loadButtons(Sprite buttons[4], Texture textures[4])
 
 bool loadFont(sf::Font &font)
 {
-    string paths[5] = {"font.ttf", "arial.ttf", "C:/Windows/Fonts/arial.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"};
+    string paths[2] = {"font.ttf", "C:/Windows/Fonts/arial.ttf"};
 
-    for(int i = 0; i < 5; i++)
+    for(int i = 0; i < 2; i++)
     {
         if(font.openFromFile(paths[i]))
             return true;
@@ -125,8 +125,7 @@ void drawGameName(RenderWindow& window, Font& font)
     Text gameName(font, "S I M O N", 72);
     gameName.setFillColor(MAIN_TEXT_COLOUR);
     const FloatRect bounds = gameName.getLocalBounds();
-    const float buttonGridCenterX = (100.f + 420.f + 256.f) / 2.f;
-    gameName.setPosition(Vector2f(buttonGridCenterX - bounds.position.x - bounds.size.x / 2.f, 40.f - bounds.position.y));
+    gameName.setPosition(Vector2f(388.f - bounds.position.x - bounds.size.x / 2.f, 40.f - bounds.position.y));
     window.draw(gameName);
 }
 
@@ -143,7 +142,7 @@ void clickFeedback(RenderWindow& window, Sprite buttons[4], int clickedButton, T
         return;
     }
 
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < 4; i++)
     {
         buttons[i].setScale(Vector2f(1.f, 1.f));
     }

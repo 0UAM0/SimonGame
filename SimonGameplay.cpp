@@ -130,7 +130,7 @@ void createWindow(RenderWindow& window)
 
 void loadButtons(Sprite buttons[4], Texture textures[4])
 {
-    for(int i = 0; i < 4; ++i)
+    for(int i = 0; i < 4; i++)
     {
         if(!textures[i].loadFromFile(BUTTONS[i]))
         {
@@ -164,8 +164,8 @@ void drawGameName(RenderWindow& window, Font& font)
 {
     Text gameName(font, "S I M O N", 72);
     gameName.setFillColor(MAIN_TEXT_COLOUR);
-    const FloatRect bounds = gameName.getLocalBounds();
-    gameName.setPosition(Vector2f(388.f - bounds.position.x - bounds.size.x / 2.f, 40.f - bounds.position.y));
+    const FloatRect boundsGameName = gameName.getLocalBounds();
+    gameName.setPosition(Vector2f(388.f - boundsGameName.position.x - boundsGameName.size.x / 2.f, 40.f - boundsGameName.position.y));
     window.draw(gameName);
 }
 
@@ -179,13 +179,14 @@ void drawButtonGlow(RenderWindow& window, Sprite buttons[4], int buttonIndex, co
     buttons[buttonIndex].setScale(Vector2f(0.85f, 0.85f));
     buttons[buttonIndex].setColor(Color(145, 145, 145));
 
-    const FloatRect bounds = buttons[buttonIndex].getGlobalBounds();
-    const float radius = max(bounds.size.x, bounds.size.y) * 0.52f;
-    const Vector2f center(bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f);
+    const FloatRect boundsButton = buttons[buttonIndex].getGlobalBounds();
+    const float radiusGlow = max(boundsButton.size.x, boundsButton.size.y) * 0.52f;
+    const Vector2f buttonCenter(boundsButton.position.x + boundsButton.size.x / 2.f, boundsButton.position.y + boundsButton.size.y / 2.f);
 
-    CircleShape glow(radius, 64);
-    glow.setOrigin(Vector2f(radius, radius));
-    glow.setPosition(center);
+
+    CircleShape glow(radiusGlow, 64);
+    glow.setOrigin(Vector2f(radiusGlow, radiusGlow));
+    glow.setPosition(buttonCenter);
     glow.setFillColor(glowColour);
     window.draw(glow);
 }
@@ -197,9 +198,9 @@ int detectMouseHover(RenderWindow& window, Sprite buttons[4])
 
     for(int i = 0; i < 4; i++)
     {
-        const FloatRect buttonBounds = buttons[i].getGlobalBounds();
-        const Vector2f buttonCenter(buttonBounds.position.x + buttonBounds.size.x / 2.f, buttonBounds.position.y + buttonBounds.size.y / 2.f);
-        const float buttonRadius = min(buttonBounds.size.x, buttonBounds.size.y) * 0.35f;
+        const FloatRect boundsButton = buttons[i].getGlobalBounds();
+        const Vector2f buttonCenter(boundsButton.position.x + boundsButton.size.x / 2.f, boundsButton.position.y + boundsButton.size.y / 2.f);
+        const float buttonRadius = min(boundsButton.size.x, boundsButton.size.y) * 0.35f;
         const float horizontalDistance = mousePositionF.x - buttonCenter.x;
         const float verticalDistance = mousePositionF.y - buttonCenter.y;
 
@@ -237,8 +238,8 @@ void clickFeedback(RenderWindow& window, Sprite buttons[4], int clickedButton, T
     }
 
     const float progress = elapsed.asSeconds() / CLICK_FEEDBACK_DURATION.asSeconds();
-    const uint8_t alpha = static_cast<uint8_t>(125.f * (1.f - progress));
-    drawButtonGlow(window, buttons, clickedButton, Color(BUTTON_GLOW_COLOURS[clickedButton].r, BUTTON_GLOW_COLOURS[clickedButton].g, BUTTON_GLOW_COLOURS[clickedButton].b, alpha));
+    const uint8_t opacity = static_cast<uint8_t>(125.f * (1.f - progress));
+    drawButtonGlow(window, buttons, clickedButton, Color(BUTTON_GLOW_COLOURS[clickedButton].r, BUTTON_GLOW_COLOURS[clickedButton].g, BUTTON_GLOW_COLOURS[clickedButton].b, opacity));
 }
 
 vector<int> patternGenerate(int n)
@@ -280,11 +281,11 @@ void displayPattern(RenderWindow& window, Font& font, Sprite buttons[4], const v
             }
 
             const float progress = glowClock.getElapsedTime().asSeconds() / seconds(0.50f).asSeconds();
-            const uint8_t alpha = static_cast<uint8_t>(125.f * (1.f - progress));
+            const uint8_t opacity = static_cast<uint8_t>(125.f * (1.f - progress));
 
             window.clear(Color(0, 13, 56));
             drawGameName(window, font);
-            drawButtonGlow(window, buttons, buttonIndex, Color(255, 255, 255, alpha));
+            drawButtonGlow(window, buttons, buttonIndex, Color(255, 255, 255, opacity));
             for(int i = 0; i < 4; i++)
             {
                 window.draw(buttons[i]);

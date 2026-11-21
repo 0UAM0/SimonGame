@@ -22,14 +22,14 @@ const Color BUTTON_GLOW_COLOURS[4] = {Color(0, 255, 0),
 const Time CLICK_FEEDBACK_DURATION = seconds(0.25f);
 
 void createWindow(RenderWindow& window);
-void loadButtons(Sprite buttons[5], Texture textures[5]);
+bool loadButtons(Sprite buttons[5], Texture textures[5]);
 bool loadFont(Font& font);
 void drawGameName(RenderWindow& window, Font& font);
 void drawButtonGlow(RenderWindow& window, Sprite buttons[5], int buttonIndex, const Color& glowColour);
 int detectMouseHover(RenderWindow& window, Sprite buttons[5]);
 int detectMouseClick(RenderWindow& window, Sprite buttons[5], const optional<Event>& event);
 void clickFeedback(RenderWindow& window, Sprite buttons[5], int clickedButton, Time elapsed);
-vector<int> patternGenerate(int n);
+vector<int> patternGenerate(int patternLength);
 int checkDifficulty(const string& difficulty = DIFFICULTIES[1]);
 void displayPattern(RenderWindow& window, Font& font, Sprite buttons[5], const vector<int>& pattern, int difficulty);
 
@@ -50,7 +50,10 @@ int main()
                          Sprite(textures[2]),
                          Sprite(textures[3]),
                          Sprite(textures[4])};
-    loadButtons(buttons, textures);
+    if(!loadButtons(buttons, textures))
+    {
+        return 1;
+    }
     int feedbackButton = -1;
     Clock feedbackClock;
     int round = 1;
@@ -75,7 +78,7 @@ int main()
             {
                 feedbackButton = clickedButton;
                 feedbackClock.restart();
-                cout << "Button clicked: " << clickedButton << endl;
+                cout << "Button clicked: " << clickedButton << endl; //Temporary output for debugging.
 
                 if(clickedButton == 4)
                 {
@@ -98,7 +101,7 @@ int main()
                         acceptingInput = false;
                         patternDisplayed = false;
                         roundClock.restart();
-                        cout << "Correct pattern! Starting round " << round << endl;
+                        cout << "Correct pattern! Starting round " << round << endl; //Temporary output for debugging.
                     }
                 }
                 else
@@ -109,7 +112,7 @@ int main()
                     acceptingInput = false;
                     patternDisplayed = false;
                     roundClock.restart();
-                    cout << "Wrong button! Starting round " << round << endl;
+                    cout << "Wrong button! Starting round " << round << endl; //Temporary output for debugging.
                 }
             }
         }
@@ -141,14 +144,14 @@ void createWindow(RenderWindow& window)
     window.setFramerateLimit(60);
 }
 
-void loadButtons(Sprite buttons[5], Texture textures[5])
+bool loadButtons(Sprite buttons[5], Texture textures[5])
 {
     for(int i = 0; i < 5; i++)
     {
         if(!textures[i].loadFromFile(BUTTONS[i]))
         {
             cerr << "Error loading texture: " << BUTTONS[i] << endl;
-            exit(EXIT_FAILURE);
+            return false;
         }
         buttons[i].setTexture(textures[i], true);
         buttons[i].setOrigin(i == 4 ? Vector2f(32.f, 32.f) : Vector2f(128.f, 128.f));
@@ -159,6 +162,7 @@ void loadButtons(Sprite buttons[5], Texture textures[5])
     buttons[2].setPosition(Vector2f(228.f, 548.f)); // Yellow button
     buttons[3].setPosition(Vector2f(548.f, 548.f)); // Blue button
     buttons[4].setPosition(Vector2f(744.f, 56.f)); // Pause button
+    return true;
 }
 
 bool loadFont(sf::Font &font)
@@ -244,7 +248,7 @@ int detectMouseClick(RenderWindow& window, Sprite buttons[5], const optional<Eve
 
 void clickFeedback(RenderWindow& window, Sprite buttons[5], int clickedButton, Time elapsed)
 {
-    if(clickedButton < 0 || clickedButton > 4)
+    if(clickedButton == -1)
     {
         return;
     }
@@ -271,11 +275,11 @@ void clickFeedback(RenderWindow& window, Sprite buttons[5], int clickedButton, T
     }
 }
 
-vector<int> patternGenerate(int n)
+vector<int> patternGenerate(int patternLength)
 {
     vector<int> pattern;
 
-    for(int i = 0; i < n; i++)
+    for(int i = 0; i < patternLength; i++)
     {
         pattern.push_back(rand() % 4);
     }

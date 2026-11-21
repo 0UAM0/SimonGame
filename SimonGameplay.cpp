@@ -26,11 +26,11 @@ void loadButtons(Sprite buttons[4], Texture textures[4]);
 bool loadFont(Font& font);
 void drawGameName(RenderWindow& window, Font& font);
 void drawButtonGlow(RenderWindow& window, Sprite buttons[4], int buttonIndex, const Color& glowColour);
-void clickFeedback(RenderWindow& window, Sprite buttons[4], int clickedButton, Time elapsed);
 int detectMouseHover(RenderWindow& window, Sprite buttons[4]);
 int detectMouseClick(RenderWindow& window, Sprite buttons[4], const optional<Event>& event);
+void clickFeedback(RenderWindow& window, Sprite buttons[4], int clickedButton, Time elapsed);
 vector<int> patternGenerate(int n);
-void displayPattern(RenderWindow& window, Sprite buttons[4], const vector<int>& pattern);
+void displayPattern(RenderWindow& window, Font& font, Sprite buttons[4], const vector<int>& pattern);
 
 int main()
 {
@@ -104,7 +104,7 @@ int main()
         if(!patternDisplayed && roundClock.getElapsedTime() >= seconds(1.f))
         {
             patternDisplayed = true;
-            displayPattern(window, buttons, pattern);
+            displayPattern(window, font, buttons, pattern);
             acceptingInput = true;
         }
 
@@ -256,7 +256,7 @@ vector<int> patternGenerate(int n)
     return pattern;
 }
 
-void displayPattern(RenderWindow& window, Sprite buttons[4], const vector<int>& pattern)
+void displayPattern(RenderWindow& window, Font& font, Sprite buttons[4], const vector<int>& pattern)
 {
     const Time GLOW_DURATION = seconds(0.50f);
     const Time GAP_DURATION = seconds(0.25f);
@@ -289,6 +289,7 @@ void displayPattern(RenderWindow& window, Sprite buttons[4], const vector<int>& 
             const uint8_t alpha = static_cast<uint8_t>(125.f * (1.f - progress));
 
             window.clear(Color(0, 13, 56));
+            drawGameName(window, font);
             drawButtonGlow(window, buttons, buttonIndex, Color(255, 255, 255, alpha));
             for(int i = 0; i < 4; i++)
             {

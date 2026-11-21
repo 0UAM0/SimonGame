@@ -101,7 +101,7 @@ int main()
             }
         }
 
-        if(!patternDisplayed && roundClock.getElapsedTime() >= seconds(1.f))
+        if(!patternDisplayed && roundClock.getElapsedTime() >= seconds(0.7f))
         {
             patternDisplayed = true;
             displayPattern(window, font, buttons, pattern);
@@ -174,14 +174,14 @@ void drawButtonGlow(RenderWindow& window, Sprite buttons[4], int buttonIndex, co
     for(int i = 0; i < 4; i++)
     {
         buttons[i].setScale(Vector2f(1.f, 1.f));
+        buttons[i].setColor(Color(255, 255, 255));
     }
     buttons[buttonIndex].setScale(Vector2f(0.85f, 0.85f));
+    buttons[buttonIndex].setColor(Color(145, 145, 145));
 
     const FloatRect bounds = buttons[buttonIndex].getGlobalBounds();
     const float radius = max(bounds.size.x, bounds.size.y) * 0.52f;
-    const Vector2f center(
-        bounds.position.x + bounds.size.x / 2.f,
-        bounds.position.y + bounds.size.y / 2.f);
+    const Vector2f center(bounds.position.x + bounds.size.x / 2.f, bounds.position.y + bounds.size.y / 2.f);
 
     CircleShape glow(radius, 64);
     glow.setOrigin(Vector2f(radius, radius));
@@ -232,16 +232,13 @@ void clickFeedback(RenderWindow& window, Sprite buttons[4], int clickedButton, T
     if(elapsed >= CLICK_FEEDBACK_DURATION)
     {
         buttons[clickedButton].setScale(Vector2f(1.f, 1.f));
+        buttons[clickedButton].setColor(Color(255, 255, 255));
         return;
     }
 
     const float progress = elapsed.asSeconds() / CLICK_FEEDBACK_DURATION.asSeconds();
     const uint8_t alpha = static_cast<uint8_t>(125.f * (1.f - progress));
-    drawButtonGlow(
-        window,
-        buttons,
-        clickedButton,
-        Color(BUTTON_GLOW_COLOURS[clickedButton].r, BUTTON_GLOW_COLOURS[clickedButton].g, BUTTON_GLOW_COLOURS[clickedButton].b, alpha));
+    drawButtonGlow(window, buttons, clickedButton, Color(BUTTON_GLOW_COLOURS[clickedButton].r, BUTTON_GLOW_COLOURS[clickedButton].g, BUTTON_GLOW_COLOURS[clickedButton].b, alpha));
 }
 
 vector<int> patternGenerate(int n)
@@ -258,9 +255,6 @@ vector<int> patternGenerate(int n)
 
 void displayPattern(RenderWindow& window, Font& font, Sprite buttons[4], const vector<int>& pattern)
 {
-    const Time GLOW_DURATION = seconds(0.50f);
-    const Time GAP_DURATION = seconds(0.25f);
-
     for(int i = 0; i < 4; i++)
     {
         buttons[i].setScale(Vector2f(1.f, 1.f));
@@ -274,7 +268,7 @@ void displayPattern(RenderWindow& window, Font& font, Sprite buttons[4], const v
         }
 
         Clock glowClock;
-        while(glowClock.getElapsedTime() < GLOW_DURATION)
+        while(glowClock.getElapsedTime() < seconds(0.50f))
         {
             while(const optional event = window.pollEvent())
             {
@@ -285,7 +279,7 @@ void displayPattern(RenderWindow& window, Font& font, Sprite buttons[4], const v
                 }
             }
 
-            const float progress = glowClock.getElapsedTime().asSeconds() / GLOW_DURATION.asSeconds();
+            const float progress = glowClock.getElapsedTime().asSeconds() / seconds(0.50f).asSeconds();
             const uint8_t alpha = static_cast<uint8_t>(125.f * (1.f - progress));
 
             window.clear(Color(0, 13, 56));
@@ -299,6 +293,7 @@ void displayPattern(RenderWindow& window, Font& font, Sprite buttons[4], const v
         }
 
         buttons[buttonIndex].setScale(Vector2f(1.f, 1.f));
-        sleep(GAP_DURATION);
+        buttons[buttonIndex].setColor(Color(255, 255, 255));
+        sleep(seconds(0.25f));
     }
 }

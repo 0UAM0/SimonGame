@@ -18,20 +18,21 @@ const Color MAIN_TEXT_COLOUR(0, 255, 34);
 const Color BUTTON_GLOW_COLOURS[4] = {Color(0, 255, 0),
                                       Color(255, 0, 0),
                                       Color(255, 255, 0),
-                                      Color(0, 128, 255)};
+                                      Color(0, 0, 255)};
 const Time CLICK_FEEDBACK_DURATION = seconds(0.25f);
 
 void createWindow(RenderWindow& window);
 bool loadButtons(Sprite buttons[5], Texture textures[5]);
 bool loadFont(Font& font);
 void drawGameName(RenderWindow& window, Font& font);
+void drawScore(RenderWindow& window, Font& font, int score);
 void drawButtonGlow(RenderWindow& window, Sprite buttons[5], int buttonIndex, const Color& glowColour);
 int detectMouseHover(RenderWindow& window, Sprite buttons[5]);
 int detectMouseClick(RenderWindow& window, Sprite buttons[5], const optional<Event>& event);
 void clickFeedback(RenderWindow& window, Sprite buttons[5], int clickedButton, Time elapsed);
 vector<int> patternGenerate(int patternLength);
 int checkDifficulty(const string& difficulty = DIFFICULTIES[1]);
-void displayPattern(RenderWindow& window, Font& font, Sprite buttons[5], const vector<int>& pattern, int difficulty);
+void displayPattern(RenderWindow& window, Font& font, Sprite buttons[5], const vector<int>& pattern, int difficulty, int score);
 
 int main()
 {
@@ -57,6 +58,7 @@ int main()
     int feedbackButton = -1;
     Clock feedbackClock;
     int round = 1;
+    int score = 0;
     int inputIndex = 0;
     vector<int> pattern = patternGenerate(round);
     Clock roundClock;
@@ -95,6 +97,7 @@ int main()
                     inputIndex++;
                     if(inputIndex == static_cast<int>(pattern.size()))
                     {
+                        score++;
                         round++;
                         pattern.push_back(rand() % 4);
                         inputIndex = 0;
@@ -107,6 +110,7 @@ int main()
                 else
                 {
                     round = 1;
+                    score = 0;
                     pattern = patternGenerate(round);
                     inputIndex = 0;
                     acceptingInput = false;
@@ -120,13 +124,14 @@ int main()
         if(!patternDisplayed && roundClock.getElapsedTime() >= seconds(0.7f))
         {
             patternDisplayed = true;
-            displayPattern(window, font, buttons, pattern, difficulty);
+            displayPattern(window, font, buttons, pattern, difficulty, score);
             acceptingInput = true;
         }
 
         detectMouseHover(window, buttons);
         window.clear(Color(0, 13, 56));
         drawGameName(window, font);
+        drawScore(window, font, score);
         clickFeedback(window, buttons, feedbackButton, feedbackClock.getElapsedTime());
         for(const Sprite& button : buttons)
         {
@@ -161,7 +166,7 @@ bool loadButtons(Sprite buttons[5], Texture textures[5])
     buttons[1].setPosition(Vector2f(548.f, 248.f)); // Red button
     buttons[2].setPosition(Vector2f(228.f, 548.f)); // Yellow button
     buttons[3].setPosition(Vector2f(548.f, 548.f)); // Blue button
-    buttons[4].setPosition(Vector2f(744.f, 56.f)); // Pause button
+    buttons[4].setPosition(Vector2f(744.f, 56.f));  // Pause button
     return true;
 }
 
@@ -185,6 +190,14 @@ void drawGameName(RenderWindow& window, Font& font)
     const FloatRect boundsGameName = gameName.getLocalBounds();
     gameName.setPosition(Vector2f(388.f - boundsGameName.position.x - boundsGameName.size.x / 2.f, 40.f - boundsGameName.position.y));
     window.draw(gameName);
+}
+
+void drawScore(RenderWindow& window, Font& font, int score)
+{
+    Text scoreText(font, "Score: " + to_string(score), 28);
+    scoreText.setFillColor(Color(255, 255, 255));
+    scoreText.setPosition(Vector2f(20.f, 20.f));
+    window.draw(scoreText);
 }
 
 void drawButtonGlow(RenderWindow& window, Sprite buttons[5], int buttonIndex, const Color& glowColour)
@@ -305,7 +318,7 @@ int checkDifficulty(const string& difficulty)
     return 1;
 }
 
-void displayPattern(RenderWindow& window, Font& font, Sprite buttons[5], const vector<int>& pattern, int difficulty)
+void displayPattern(RenderWindow& window, Font& font, Sprite buttons[5], const vector<int>& pattern, int difficulty, int score)
 {
     float patternSpeed = 0.50f;
 
@@ -347,6 +360,7 @@ void displayPattern(RenderWindow& window, Font& font, Sprite buttons[5], const v
 
             window.clear(Color(0, 13, 56));
             drawGameName(window, font);
+            drawScore(window, font, score);
             drawButtonGlow(window, buttons, buttonIndex, Color(255, 255, 255, opacity));
             for(int i = 0; i < 4; i++)
             {

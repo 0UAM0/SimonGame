@@ -15,6 +15,8 @@ const int WINDOW_H = 750;
 const string DIFFICULTIES[3] = {"Easy", "Medium", "Hard"};
 const string BUTTONS[4] = {"buttonGreen.png", "buttonRed.png", "buttonYellow.png", "buttonBlue.png"};
 const string PAUSE_BUTTON = "buttonPause.png";
+const string RESUME_BUTTON = "buttonResume.png";
+const string MAIN_MENU_BUTTON = "buttonMainMenu.png";
 const Color MAIN_TEXT_COLOUR(0, 255, 34);
 const Color BUTTON_GLOW_COLOURS[4] = {Color(0, 255, 0),
                                       Color(255, 0, 0),
@@ -23,20 +25,19 @@ const Color BUTTON_GLOW_COLOURS[4] = {Color(0, 255, 0),
 const Time CLICK_FEEDBACK_DURATION = seconds(0.25f);
 
 void createWindow(RenderWindow& window);
-bool loadButtons(Sprite buttons[4], Texture textures[4], Texture& pauseTexture, Sprite& pauseSprite);
+bool loadButtons(Sprite buttons[4], Texture textures[4], Texture& pauseTexture, Sprite& pauseSprite, Texture& resumeTexture, Sprite& resumeSprite, Texture& mainMenuTexture, Sprite& mainMenuSprite);
 bool loadFont(Font& font);
 void drawGameName(RenderWindow& window, Font& font);
 void drawScore(RenderWindow& window, Font& font, int score);
 void drawButtonGlow(RenderWindow& window, Sprite buttons[4], int buttonIndex, const Color& glowColour);
 int detectMouseHover(RenderWindow& window, Sprite buttons[4]);
 int detectMouseClick(RenderWindow& window, Sprite buttons[4], const optional<Event>& event);
-bool pauseButton(RenderWindow& window, Sprite& pauseSprite, const optional<Event>& event,
-                 Font& font, Sprite buttons[4], const vector<int>& pattern, int difficulty,
-                 int score, bool& acceptingInput, bool& patternDisplayed);
+bool pauseButton(RenderWindow& window, Sprite& pauseSprite, const optional<Event>& event, Font& font, Sprite buttons[4], Sprite& resumeSprite, Sprite& mainMenuSprite, const vector<int>& pattern, int difficulty, int score, bool& acceptingInput, bool& patternDisplayed, Clock& roundClock);
 void clickFeedback(RenderWindow& window, Sprite buttons[4], int clickedButton, Time elapsed);
+void drawPauseBox(RenderWindow& window, Font& font, Sprite& resumeSprite, Sprite& mainMenuSprite);
 vector<int> patternGenerate(int patternLength);
 int checkDifficulty(const string& difficulty = DIFFICULTIES[1]);
-void displayPattern(RenderWindow& window, Font& font, Sprite buttons[4], Sprite& pauseSprite, const vector<int>& pattern, int difficulty, int score, bool& acceptingInput, bool& patternDisplayed);
+void displayPattern(RenderWindow& window, Font& font, Sprite buttons[4], Sprite& pauseSprite, Sprite& resumeSprite, Sprite& mainMenuSprite, const vector<int>& pattern, int difficulty, int score, bool& acceptingInput, bool& patternDisplayed, Clock& roundClock);
 
 int main()
 {
@@ -56,7 +57,11 @@ int main()
                          Sprite(textures[3])};
     Texture pauseTexture;
     Sprite pauseSprite(pauseTexture);
-    if(!loadButtons(buttons, textures, pauseTexture, pauseSprite))
+    Texture resumeTexture;
+    Sprite resumeSprite(resumeTexture);
+    Texture mainMenuTexture;
+    Sprite mainMenuSprite(mainMenuTexture);
+    if(!loadButtons(buttons, textures, pauseTexture, pauseSprite, resumeTexture, resumeSprite, mainMenuTexture, mainMenuSprite))
     {
         return 1;
     }
@@ -80,7 +85,7 @@ int main()
                 window.close();
             }
 
-            if(pauseButton(window, pauseSprite, event, font, buttons, pattern, difficulty, score, acceptingInput, patternDisplayed))
+            if(pauseButton(window, pauseSprite, event, font, buttons, resumeSprite, mainMenuSprite, pattern, difficulty, score, acceptingInput, patternDisplayed, roundClock))
             {
                 continue;
             }
@@ -129,8 +134,7 @@ int main()
         if(!patternDisplayed && roundClock.getElapsedTime() >= seconds(0.7f))
         {
             patternDisplayed = true;
-            displayPattern(window, font, buttons, pauseSprite, pattern, difficulty, score, acceptingInput, patternDisplayed);
-            acceptingInput = true;
+            displayPattern(window, font, buttons, pauseSprite, resumeSprite, mainMenuSprite, pattern, difficulty, score, acceptingInput, patternDisplayed, roundClock);
         }
 
         detectMouseHover(window, buttons);
@@ -141,7 +145,7 @@ int main()
         clickFeedback(window, buttons, feedbackButton, feedbackClock.getElapsedTime());
         for(int i = 0; i < 4; i++)
             window.draw(buttons[i]);
-        pauseButton(window, pauseSprite, nullopt, font, buttons, pattern, difficulty, score, acceptingInput, patternDisplayed);
+        pauseButton(window, pauseSprite, nullopt, font, buttons, resumeSprite, mainMenuSprite, pattern, difficulty, score, acceptingInput, patternDisplayed, roundClock);
         window.display();
     }
 
@@ -154,7 +158,7 @@ void createWindow(RenderWindow& window)
     window.setFramerateLimit(60);
 }
 
-bool loadButtons(Sprite buttons[4], Texture textures[4], Texture& pauseTexture, Sprite& pauseSprite)
+bool loadButtons(Sprite buttons[4], Texture textures[4], Texture& pauseTexture, Sprite& pauseSprite,Texture& resumeTexture, Sprite& resumeSprite, Texture& mainMenuTexture, Sprite& mainMenuSprite)
 {
     for(int i = 0; i < 4; i++)
     {
@@ -182,6 +186,26 @@ bool loadButtons(Sprite buttons[4], Texture textures[4], Texture& pauseTexture, 
     pauseSprite.setPosition(Vector2f(768.f, 32.f));
     pauseSprite.setScale(Vector2f(1.f, 1.f));
     pauseSprite.setColor(Color(255, 255, 255));
+
+    if(!resumeTexture.loadFromFile(RESUME_BUTTON))
+    {
+        cerr << "Error loading texture: " << RESUME_BUTTON << endl;
+        return false;
+    }
+    resumeSprite.setTexture(resumeTexture, true);
+    resumeSprite.setTextureRect(IntRect({8,76},{240,92}));
+    resumeSprite.setOrigin(Vector2f(120.f,46.f));
+    resumeSprite.setPosition(Vector2f(400.f, 320.f));
+
+    if(!mainMenuTexture.loadFromFile(MAIN_MENU_BUTTON))
+    {
+        cerr << "Error loading texture: " << MAIN_MENU_BUTTON << endl;
+        return false;
+    }
+    mainMenuSprite.setTexture(mainMenuTexture, true);
+    mainMenuSprite.setTextureRect(IntRect({8,76},{240,92}));
+    mainMenuSprite.setOrigin(Vector2f(120.f,46.f));
+    mainMenuSprite.setPosition(Vector2f(400.f, 430.f));
     return true;
 }
 
@@ -213,6 +237,25 @@ void drawScore(RenderWindow& window, Font& font, int score)
     scoreText.setFillColor(Color(255, 255, 255));
     scoreText.setPosition(Vector2f(20.f, 20.f));
     window.draw(scoreText);
+}
+
+void drawPauseBox(RenderWindow& window, Font& font, Sprite& resumeSprite, Sprite& mainMenuSprite)
+{
+    RectangleShape pauseBox(Vector2f(500.f, 500.f));
+    pauseBox.setPosition(Vector2f(150.f, 125.f));
+    pauseBox.setFillColor(Color(0, 13, 56));
+    pauseBox.setOutlineColor(MAIN_TEXT_COLOUR);
+    pauseBox.setOutlineThickness(3.f);
+
+    Text pausedText(font, "PAUSED", 48);
+    pausedText.setFillColor(MAIN_TEXT_COLOUR);
+    const FloatRect pausedBounds = pausedText.getLocalBounds();
+    pausedText.setPosition(Vector2f(400.f - pausedBounds.position.x - pausedBounds.size.x / 2.f, 155.f));
+
+    window.draw(pauseBox);
+    window.draw(pausedText);
+    window.draw(resumeSprite);
+    window.draw(mainMenuSprite);
 }
 
 void drawButtonGlow(RenderWindow& window, Sprite buttons[4], int buttonIndex, const Color& glowColour)
@@ -269,7 +312,7 @@ int detectMouseClick(RenderWindow& window, Sprite buttons[4], const optional<Eve
     return -1;
 }
 
-bool pauseButton(RenderWindow& window, Sprite& pauseSprite, const optional<Event>& event, Font& font, Sprite buttons[4], const vector<int>& pattern, int difficulty, int score, bool& acceptingInput, bool& patternDisplayed)
+bool pauseButton(RenderWindow& window, Sprite& pauseSprite, const optional<Event>& event, Font& font, Sprite buttons[4], Sprite& resumeSprite, Sprite& mainMenuSprite, const vector<int>& pattern, int difficulty, int score, bool& acceptingInput, bool& patternDisplayed, Clock& roundClock)
 {
     static Clock feedbackClock;
     static bool paused = false;
@@ -292,38 +335,46 @@ bool pauseButton(RenderWindow& window, Sprite& pauseSprite, const optional<Event
             feedbackClock.restart();
             pauseSprite.setScale(Vector2f(1.f, 1.f));
             pauseSprite.setColor(Color(145, 145, 145));
+            paused = true;
+            acceptingInput = false;
 
-            if(!paused)
+            while(window.isOpen() && paused)
             {
-                paused = true;
-                acceptingInput = false;
-
-                while(window.isOpen() && paused)
+                while(const optional pausedEvent = window.pollEvent())
                 {
-                    while(const optional pausedEvent = window.pollEvent())
+                    if(pausedEvent->is<Event::Closed>())
                     {
-                        if(pausedEvent->is<Event::Closed>())
+                        window.close();
+                        return true;
+                    }
+
+                    if(pausedEvent->is<Event::MouseButtonPressed>())
+                    {
+                        const Vector2i clickPosition = Mouse::getPosition(window);
+                        const Vector2f clickPositionF(static_cast<float>(clickPosition.x), static_cast<float>(clickPosition.y));
+
+                        if(resumeSprite.getGlobalBounds().contains(clickPositionF))
                         {
-                            window.close();
-                            return true;
+                            paused = false;
+                            pauseSprite.setColor(Color(255, 255, 255));
+                            acceptingInput = false;
+                            patternDisplayed = false;
+                            roundClock.restart();
+                            break;
                         }
 
-                        if(pausedEvent->is<Event::MouseButtonPressed>())
+                        if(mainMenuSprite.getGlobalBounds().contains(clickPositionF))
                         {
                             continue;
                         }
                     }
+                }
 
-                    if(window.isOpen() && paused)
-                    {
-                        window.clear(Color(0, 13, 56));
-                        drawGameName(window, font);
-                        drawScore(window, font, score);
-                        for(int i = 0; i < 4; i++) window.draw(buttons[i]);
-                        pauseSprite.setColor(Color(145, 145, 145));
-                        window.draw(pauseSprite);
-                        window.display();
-                    }
+                if(window.isOpen() && paused)
+                {
+                    window.clear(Color(0, 13, 56));
+                    drawPauseBox(window, font, resumeSprite, mainMenuSprite);
+                    window.display();
                 }
             }
             return true;
@@ -389,7 +440,7 @@ int checkDifficulty(const string& difficulty)
     return 1;
 }
 
-void displayPattern(RenderWindow& window, Font& font, Sprite buttons[4], Sprite& pauseSprite, const vector<int>& pattern, int difficulty, int score, bool& acceptingInput, bool& patternDisplayed)
+void displayPattern(RenderWindow& window, Font& font, Sprite buttons[4], Sprite& pauseSprite, Sprite& resumeSprite, Sprite& mainMenuSprite, const vector<int>& pattern, int difficulty, int score, bool& acceptingInput, bool& patternDisplayed, Clock& roundClock)
 {
     float patternSpeed = 0.50f;
 
@@ -424,7 +475,7 @@ void displayPattern(RenderWindow& window, Font& font, Sprite buttons[4], Sprite&
                     window.close();
                     return;
                 }
-                if(pauseButton(window, pauseSprite, event, font, buttons, pattern, difficulty, score, acceptingInput, patternDisplayed))
+                if(pauseButton(window, pauseSprite, event, font, buttons, resumeSprite, mainMenuSprite, pattern, difficulty, score, acceptingInput, patternDisplayed, roundClock))
                 {
                     return;
                 }
@@ -441,7 +492,7 @@ void displayPattern(RenderWindow& window, Font& font, Sprite buttons[4], Sprite&
             {
                 window.draw(buttons[i]);
             }
-            pauseButton(window, pauseSprite, nullopt, font, buttons, pattern, difficulty, score, acceptingInput, patternDisplayed);
+            pauseButton(window, pauseSprite, nullopt, font, buttons, resumeSprite, mainMenuSprite, pattern, difficulty, score, acceptingInput, patternDisplayed, roundClock);
             window.display();
         }
 
@@ -457,11 +508,12 @@ void displayPattern(RenderWindow& window, Font& font, Sprite buttons[4], Sprite&
                     window.close();
                     return;
                 }
-                if(pauseButton(window, pauseSprite, event, font, buttons, pattern, difficulty, score, acceptingInput, patternDisplayed))
+                if(pauseButton(window, pauseSprite, event, font, buttons, resumeSprite, mainMenuSprite, pattern, difficulty, score, acceptingInput, patternDisplayed, roundClock))
                 {
                     return;
                 }
             }
         }
     }
+    acceptingInput = patternDisplayed;
 }

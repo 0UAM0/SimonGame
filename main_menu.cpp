@@ -1,71 +1,95 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
-#include <string>
-using namespace std;   
+using namespace std;
+
 int main()
 {
     // Create window
-    sf::RenderWindow window(
-        sf::VideoMode({800, 600}),
-        "SFML Project"
-    );
-
+    sf::RenderWindow window(sf::VideoMode({800, 750}), "SFML Project");
     window.setFramerateLimit(60);
 
-    // Game states
-    int gameState = 0;
+    // Screens
     // 0 = Main Menu
-    // 1 = Game Screen
-    // 2 = Credits
+    // 1 = Difficulty Menu
+    // 2 = Game
+    // 3 = Credits
+    int screen = 0;
+
+    // Difficulty
+    // 1 = Easy, 2 = Medium, 3 = Hard
+    int difficulty = 0;
 
     // Load font
     sf::Font font;
-
-    if (!font.openFromFile("times.ttf"))
+    if (!font.openFromFile("font.ttf"))
     {
         cout << "Font not found!" << endl;
         return -1;
     }
 
-    // Title
+    // Titles
     sf::Text title(font, "MY 2D GAME", 50);
-    title.setFillColor(sf::Color::White);
     title.setPosition({245, 100});
 
-    // Button names
-    string names[3] = {
-        "START GAME",
-        "CREDITS",
-        "EXIT"
-    };
+    sf::Text difficultyTitle(font, "SELECT DIFFICULTY", 40);
+    difficultyTitle.setPosition({220, 120});
 
-    // Create buttons
-    sf::RectangleShape buttons[3];
-    sf::Text buttonText[3] = {
+    // Main menu buttons
+    sf::RectangleShape menuButtons[3];
+    sf::Text menuText[3] = {
         sf::Text(font, "START GAME", 25),
         sf::Text(font, "CREDITS", 25),
         sf::Text(font, "EXIT", 25)
     };
 
+    // Difficulty buttons
+    sf::RectangleShape levelButtons[3];
+    sf::Text levelText[3] = {
+        sf::Text(font, "EASY", 25),
+        sf::Text(font, "MEDIUM", 25),
+        sf::Text(font, "HARD", 25)
+    };
+
+    // Set size, position and color of all buttons
     for (int i = 0; i < 3; i++)
-{
-    buttons[i].setSize(sf::Vector2f(250.f, 60.f));
+    {
+        menuButtons[i].setSize({250, 60});
+        menuButtons[i].setPosition({275, 250 + i * 85.f});
+        menuButtons[i].setFillColor(sf::Color(50, 100, 180));
 
-    buttons[i].setPosition(sf::Vector2f(
-        275.f, 250.f + i * 85.f
-    ));
+        levelButtons[i].setSize({250, 60});
+        levelButtons[i].setPosition({275, 250 + i * 85.f});
+        levelButtons[i].setFillColor(sf::Color(50, 100, 180));
+    }
 
-    buttons[i].setFillColor(sf::Color(50, 100, 180));
+    // Text positions (inside the buttons)
+    menuText[0].setPosition({325, 263});
+    menuText[1].setPosition({345, 348});
+    menuText[2].setPosition({370, 433});
 
-    buttonText[i].setFillColor(sf::Color::White);
+    levelText[0].setPosition({368, 263});
+    levelText[1].setPosition({348, 348});
+    levelText[2].setPosition({365, 433});
 
-    buttonText[i].setPosition(sf::Vector2f(
-        325.f, 263.f + i * 85.f
-    ));
-}
-    // Main game loop
+    // Game screen text
+    sf::Text gameText(font, "GAME STARTED!", 45);
+    gameText.setFillColor(sf::Color::Green);
+    gameText.setPosition({230, 250});
+
+    // Credits text
+    sf::Text credits(font, "Developed by\n\nMuhammad Talha\nUmer Assad\nMuhammad Nauman", 25);
+    credits.setPosition({300, 180});
+
+    // Back message
+    sf::Text backText(font, "Press ESC to go back", 20);
+    backText.setPosition({310, 650});
+
+    // Main loop
     while (window.isOpen())
     {
+        // Get mouse position
+        sf::Vector2f mouse(sf::Mouse::getPosition(window));
+
         // Handle events
         while (const auto event = window.pollEvent())
         {
@@ -76,47 +100,47 @@ int main()
             }
 
             // Mouse click
-            if (const auto* mouseClick =
-                event->getIf<sf::Event::MouseButtonPressed>())
+            if (event->is<sf::Event::MouseButtonPressed>())
             {
-                if (mouseClick->button == sf::Mouse::Button::Left)
+                // Main menu
+                if (screen == 0)
                 {
-                    sf::Vector2f mouse(
-                        static_cast<float>(mouseClick->position.x),
-                        static_cast<float>(mouseClick->position.y)
-                    );
+                    if (menuButtons[0].getGlobalBounds().contains(mouse))
+                        screen = 1;   // go to difficulty menu
 
-                    if (gameState == 0)
+                    if (menuButtons[1].getGlobalBounds().contains(mouse))
+                        screen = 3;   // go to credits
+
+                    if (menuButtons[2].getGlobalBounds().contains(mouse))
+                        window.close();
+                }
+
+                // Difficulty menu
+                else if (screen == 1)
+                {
+                    for (int i = 0; i < 3; i++)
                     {
-                        for (int i = 0; i < 3; i++)
+                        if (levelButtons[i].getGlobalBounds().contains(mouse))
                         {
-                            if (buttons[i].getGlobalBounds().contains(mouse))
-                            {
-                                if (i == 0)
-                                    gameState = 1;
-
-                                else if (i == 1)
-                                    gameState = 2;
-
-                                else if (i == 2)
-                                    window.close();
-                            }
+                            difficulty = i + 1;
+                            screen = 2;   // start game
                         }
                     }
-                    else if (gameState == 2)
-                    {
-                        gameState = 0;
-                    }
+                }
+
+                // Credits
+                else if (screen == 3)
+                {
+                    screen = 0;
                 }
             }
 
-            // Keyboard input
-            if (const auto* keyPress =
-                event->getIf<sf::Event::KeyPressed>())
+            // ESC key goes back to main menu
+            if (const auto* key = event->getIf<sf::Event::KeyPressed>())
             {
-                if (keyPress->code == sf::Keyboard::Key::Escape)
+                if (key->code == sf::Keyboard::Key::Escape)
                 {
-                    gameState = 0;
+                    screen = 0;
                 }
             }
         }
@@ -125,75 +149,59 @@ int main()
         window.clear(sf::Color(25, 25, 45));
 
         // MAIN MENU
-        if (gameState == 0)
+        if (screen == 0)
         {
             window.draw(title);
 
-            sf::Vector2i mouse = sf::Mouse::getPosition(window);
-
             for (int i = 0; i < 3; i++)
             {
-                if (buttons[i].getGlobalBounds().contains(
-                sf::Vector2f(
-            static_cast<float>(mouse.x),
-            static_cast<float>(mouse.y)
-            )))
-                {
-                    buttons[i].setFillColor(
-                        sf::Color(100, 150, 230)
-                    );
-                }
+                // Change color when mouse is on button
+                if (menuButtons[i].getGlobalBounds().contains(mouse))
+                    menuButtons[i].setFillColor(sf::Color(100, 150, 230));
                 else
-                {
-                    buttons[i].setFillColor(
-                        sf::Color(50, 100, 180)
-                    );
-                }
+                    menuButtons[i].setFillColor(sf::Color(50, 100, 180));
 
-                window.draw(buttons[i]);
-                window.draw(buttonText[i]);
+                window.draw(menuButtons[i]);
+                window.draw(menuText[i]);
             }
         }
 
-        // GAME SCREEN
-        else if (gameState == 1)
+        // DIFFICULTY MENU
+        else if (screen == 1)
         {
-            sf::Text gameText(font, "GAME STARTED!", 45);
-            gameText.setFillColor(sf::Color::Green);
-            gameText.setPosition({230, 250});
+            window.draw(difficultyTitle);
 
-            sf::Text instruction(
-                font,
-                "Press ESC to return to menu",
-                20
-            );
+            for (int i = 0; i < 3; i++)
+            {
+                if (levelButtons[i].getGlobalBounds().contains(mouse))
+                    levelButtons[i].setFillColor(sf::Color(100, 150, 230));
+                else
+                    levelButtons[i].setFillColor(sf::Color(50, 100, 180));
 
-            instruction.setFillColor(sf::Color::White);
-            instruction.setPosition({250, 330});
+                window.draw(levelButtons[i]);
+                window.draw(levelText[i]);
+            }
 
+            window.draw(backText);
+        }
+
+        // GAME
+        else if (screen == 2)
+        {
+            // Gameplay code goes here
+            // use the difficulty variable (1, 2 or 3)
             window.draw(gameText);
-            window.draw(instruction);
+            window.draw(backText);
         }
 
-        // CREDITS SCREEN
-        else if (gameState == 2)
+        // CREDITS
+        else if (screen == 3)
         {
-            sf::Text credits(
-                font,
-               "Developed by\n\n"
-                "Muhammad Talha\n"
-                "Umer Assad\n"
-                "Muhammad Nauman",
-                25
-            );
-
-            credits.setFillColor(sf::Color::White);
-            credits.setPosition({190, 180});
-
             window.draw(credits);
+            window.draw(backText);
         }
 
-        // Display everything
+        // Show everything
         window.display();
     }
 

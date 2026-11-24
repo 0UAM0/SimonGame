@@ -153,7 +153,7 @@ int main()
         centerText(levelText[i], buttonCenter.x, buttonCenter.y);
     }
 
-    Text credits(font, "Developed by\n\nMuhammad Talha\nUmer Assad\nMuhammad Nauman", 25);
+    Text credits(font, "Developed by\n\nMuhammad Talha\nUmer Asaad\nMuhammad Nauman", 25);
     credits.setPosition({300, 180});
 
     Text backText(font, "Press ESC to go back", 20);
